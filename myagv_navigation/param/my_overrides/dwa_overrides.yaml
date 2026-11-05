@@ -1,0 +1,11 @@
+local_costmap:
+  update_frequency: 5.0     # vendor 0.3 Hz: obstacles seen only every ~3 s
+  publish_frequency: 2.0
+global_costmap:
+  update_frequency: 1.0
+  publish_frequency: 0.5
+DWAPlannerROS:
+  min_vel_x: 0.0            # rear of the lidar scan is blind -> never reverse
+  sim_time: 2.0             # vendor 4.0, heavy on a Pi
+  vx_samples: 10            # vendor 65
+  vth_samples: 20           # vendor 50

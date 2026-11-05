@@ -1,0 +1,39 @@
+<launch>
+  <arg name="map_file" default="$(find myagv_navigation)/map/my_map.yaml"/>
+  <arg name="params"   default="$(find myagv_navigation)/param/dwa_local_planner_param"/>
+  <arg name="init_x"   default="0.0"/>
+  <arg name="init_y"   default="0.0"/>
+  <arg name="init_a"   default="0.0"/>
+
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" output="screen">
+    <param name="frame_id" value="map"/>
+  </node>
+
+  <node name="amcl" pkg="amcl" type="amcl" output="screen">
+    <rosparam file="$(arg params)/amcl.yaml" command="load"/>
+    <param name="initial_pose_x" value="$(arg init_x)"/>
+    <param name="initial_pose_y" value="$(arg init_y)"/>
+    <param name="initial_pose_a" value="$(arg init_a)"/>
+    <param name="min_particles" value="500"/>
+    <param name="max_particles" value="2000"/>
+  </node>
+
+  <node name="move_base" pkg="move_base" type="move_base" respawn="false" output="screen">
+    <rosparam file="$(arg params)/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(arg params)/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(arg params)/local_costmap_params.yaml"  command="load"/>
+    <rosparam file="$(arg params)/global_costmap_params.yaml" command="load"/>
+    <rosparam file="$(arg params)/base_global_planner_params.yaml" command="load" ns="move_base"/>
+    <rosparam file="$(arg params)/dwa_local_planner_params.yaml" command="load"/>
+    <rosparam file="$(find myagv_navigation)/param/my_overrides/dwa_overrides.yaml" command="load"/>
+    <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+    <param name="base_local_planner"  value="dwa_local_planner/DWAPlannerROS"/>
+    <param name="planner_frequency"    value="1.0"/>
+    <param name="controller_frequency" value="10.0"/>
+    <remap from="cmd_vel" to="nav_cmd_vel"/>
+  </node>
+
+  <node name="nav_cmd_vel_guard" pkg="myagv_navigation" type="nav_cmd_vel_guard.py" output="screen">
+    <param name="timeout" value="0.5"/>
+  </node>
+</launch>
